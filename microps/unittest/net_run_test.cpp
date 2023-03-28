@@ -3,6 +3,7 @@
 extern "C" {
 #include "../driver/dummy.h"
 #include "../net.h"
+#include "../platform/linux/platform.h"
 }
 
 // When share the global variable such devices, how to test?
