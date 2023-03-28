@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 extern "C" {
+#include "../driver/dummy.h"
 #include "../net.h"
 }
 
