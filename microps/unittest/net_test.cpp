@@ -27,3 +27,22 @@ TEST(NetDeviceRegisterTest, ValidCase) {
   EXPECT_EQ(dev2->next, dev1);
   EXPECT_EQ(dev2->index, 1);
 }
+
+TEST(NetProtocolRegisterTest, ValidCase) {
+  uint16_t type = 0x0801;
+  void (*handler)(const uint8_t *, size_t, struct net_device *) = nullptr;
+
+  int result = net_protocol_register(type, handler);
+
+  EXPECT_EQ(0, result);
+}
+
+TEST(NetProtocolRegisterTest, AlreadyExistCase) {
+  uint16_t type = 0x0802;
+  void (*handler)(const uint8_t *, size_t, struct net_device *) = nullptr;
+
+  int result = net_protocol_register(type, handler);
+  result = net_protocol_register(type, handler);
+
+  EXPECT_EQ(-1, result);
+}
