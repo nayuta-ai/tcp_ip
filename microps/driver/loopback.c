@@ -94,12 +94,8 @@ struct net_device *loopback_init(void) {
   dev->mtu = LOOPBACK_MTU;
   dev->hlen = 0;
   dev->alen = 0;
+  dev->flags = NET_DEVICE_FLAG_LOOPBACK;
   dev->ops = &loopback_ops;
-  if (net_device_register(dev) == -1) {
-    errorf("net_device_register() failure");
-    return NULL;
-  }
-
   lo = memory_alloc(sizeof(*lo));
   if (!lo) {
     errorf("memory_alloc() failure");
@@ -109,7 +105,11 @@ struct net_device *loopback_init(void) {
   mutex_init(&lo->mutex);
   queue_init(&lo->queue);
   dev->priv = lo;
-  intr_request_irq(LOOPBACK_IRQ, loopback_isr, INTR_IRQ_SHARED, dev->name, dev);
+  if (net_device_register(dev) == -1) {
+    errorf("net_device_register() failure");
+    return NULL;
+  }
+  intr_request_irq(lo->irq, loopback_isr, INTR_IRQ_SHARED, dev->name, dev);
   debugf("initialized, dev=%s", dev->name);
   return dev;
 }

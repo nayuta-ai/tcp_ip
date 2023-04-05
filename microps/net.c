@@ -133,12 +133,12 @@ int net_input_handler(uint16_t type, const uint8_t *data, size_t len,
 
   for (proto = protocols; proto; proto = proto->next) {
     if (proto->type == type) {
-      entry = memory_alloc(sizeof(*entry));
+      entry = memory_alloc(sizeof(*entry) + len);
       if (!proto) {
         errorf("memory_alloc() failure");
         return -1;
       }
-      memcpy(entry->data, data, sizeof(*data));
+      memcpy(entry->data, data, len);
       entry->dev = dev;
       entry->len = len;
       if (!queue_push(&proto->queue, entry)) {
