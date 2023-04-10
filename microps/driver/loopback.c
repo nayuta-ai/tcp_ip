@@ -1,5 +1,3 @@
-#include "loopback.h"
-
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -9,6 +7,7 @@
 #include "platform.h"
 #include "util.h"
 
+#define LOOPBACK_MTU UINT16_MAX /* maximum size of IP datagram */
 #define LOOPBACK_QUEUE_LIMIT 16
 #define LOOPBACK_IRQ (INTR_IRQ_BASE + 1)
 
@@ -49,7 +48,7 @@ static int loopback_transmit(struct net_device *dev, uint16_t type,
   queue_push(&PRIV(dev)->queue, entry);
   num = PRIV(dev)->queue.num;
   mutex_unlock(&PRIV(dev)->mutex);
-  debugf("queue pushed (num:%u), dev=%s, type=0x%04x, len=%zd", num, dev->name,
+  debugf("queue pushed (num:%u), dev=%s, type=0x%04x, len=%zu", num, dev->name,
          type, len);
   debugdump(data, len);
   intr_raise_irq(PRIV(dev)->irq);
@@ -67,7 +66,7 @@ static int loopback_isr(unsigned int irq, void *id) {
     if (!entry) {
       break;
     }
-    debugf("queue popped (num:%u), dev=%s, type=0x%04x, len=%zd",
+    debugf("queue popped (num:%u), dev=%s, type=0x%04x, len=%zu",
            PRIV(dev)->queue.num, dev->name, entry->type, entry->len);
     debugdump(entry->data, entry->len);
     net_input_handler(entry->type, entry->data, entry->len, dev);
@@ -92,8 +91,8 @@ struct net_device *loopback_init(void) {
   }
   dev->type = NET_DEVICE_TYPE_LOOPBACK;
   dev->mtu = LOOPBACK_MTU;
-  dev->hlen = 0;
-  dev->alen = 0;
+  dev->hlen = 0; /* non header */
+  dev->alen = 0; /* non address */
   dev->flags = NET_DEVICE_FLAG_LOOPBACK;
   dev->ops = &loopback_ops;
   lo = memory_alloc(sizeof(*lo));

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "net.h"
 #include "platform.h"
 #include "util.h"
 
@@ -38,7 +39,6 @@ int intr_request_irq(unsigned int irq,
       }
     }
   }
-  // Add new entry to IRQ list
   entry = memory_alloc(sizeof(*entry));
   if (!entry) {
     errorf("memory_alloc() failure");
@@ -53,7 +53,6 @@ int intr_request_irq(unsigned int irq,
   irqs = entry;
   sigaddset(&sigmask, irq);
   debugf("registered: irq=%u, name=%s", irq, name);
-
   return 0;
 }
 
@@ -94,6 +93,7 @@ static void *intr_thread(void *arg) {
 
 int intr_run(void) {
   int err;
+
   err = pthread_sigmask(SIG_BLOCK, &sigmask, NULL);
   if (err) {
     errorf("pthread_sigmask() %s", strerror(err));

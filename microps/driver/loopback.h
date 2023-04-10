@@ -3,8 +3,7 @@
 
 #include "net.h"
 
-#define LOOPBACK_MTU UINT16_MAX /* maximum size of IP datagram */
-
-extern struct net_device* loopback_init(void);
+extern struct net_device *
+loopback_init(void);
 
 #endif

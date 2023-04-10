@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "ip.h"
 #include "platform.h"
 #include "util.h"
 
@@ -29,6 +28,7 @@ static struct net_protocol *protocols;
 
 struct net_device *net_device_alloc(void) {
   struct net_device *dev;
+
   dev = memory_alloc(sizeof(*dev));
   if (!dev) {
     errorf("memory_alloc() failure");
@@ -81,13 +81,40 @@ static int net_device_close(struct net_device *dev) {
   return 0;
 }
 
+/* NOTE: must not be call after net_run() */
+int net_device_add_iface(struct net_device *dev, struct net_iface *iface) {
+  struct net_iface *entry;
+
+  for (entry = dev->ifaces; entry; entry = entry->next) {
+    if (entry->family == iface->family) {
+      /* NOTE: For simplicity, only one iface can be added per family. */
+      errorf("already exists, dev=%s, family=%d", dev->name, entry->family);
+      return -1;
+    }
+  }
+  iface->next = dev->ifaces;
+  iface->dev = dev;
+  dev->ifaces = iface;
+  return 0;
+}
+
+struct net_iface *net_device_get_iface(struct net_device *dev, int family) {
+  struct net_iface *entry;
+
+  for (entry = dev->ifaces; entry; entry = entry->next) {
+    if (entry->family == family) {
+      break;
+    }
+  }
+  return entry;
+}
+
 int net_device_output(struct net_device *dev, uint16_t type,
                       const uint8_t *data, size_t len, const void *dst) {
   if (!NET_DEVICE_IS_UP(dev)) {
     errorf("not opened, dev=%s", dev->name);
     return -1;
   }
-
   if (len > dev->mtu) {
     errorf("too long, dev=%s, mtu=%u, len=%zu", dev->name, dev->mtu, len);
     return -1;
@@ -134,13 +161,13 @@ int net_input_handler(uint16_t type, const uint8_t *data, size_t len,
   for (proto = protocols; proto; proto = proto->next) {
     if (proto->type == type) {
       entry = memory_alloc(sizeof(*entry) + len);
-      if (!proto) {
+      if (!entry) {
         errorf("memory_alloc() failure");
         return -1;
       }
-      memcpy(entry->data, data, len);
       entry->dev = dev;
       entry->len = len;
+      memcpy(entry->data, data, len);
       if (!queue_push(&proto->queue, entry)) {
         errorf("queue_push() failure");
         memory_free(entry);
@@ -153,6 +180,7 @@ int net_input_handler(uint16_t type, const uint8_t *data, size_t len,
       return 0;
     }
   }
+  /* unsupported protocol */
   return 0;
 }
 
@@ -193,6 +221,7 @@ int net_run(void) {
 
 void net_shutdown(void) {
   struct net_device *dev;
+
   debugf("close all devices...");
   for (dev = devices; dev; dev = dev->next) {
     net_device_close(dev);
@@ -200,6 +229,8 @@ void net_shutdown(void) {
   intr_shutdown();
   debugf("shutting down");
 }
+
+#include "ip.h"
 
 int net_init(void) {
   if (intr_init() == -1) {
