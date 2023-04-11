@@ -112,3 +112,31 @@ TEST(IpIfaceSelectTest, InvalidCase) {
   memory_free(iface);
   memory_free(dev);
 }
+
+int test_transmit(struct net_device *dev, uint16_t type, const uint8_t *data,
+                  size_t len, const void *dst) {
+  return 0;
+}
+
+static struct net_device_ops test_ops = {
+    .transmit = test_transmit,
+};
+
+TEST(IpOutputTest, ValidCase) {
+  struct net_device *dev;
+  struct ip_iface *iface, *entry;
+  char unicast[100] = "127.0.0.1";
+  char netmask[100] = "255.255.0.0";
+  iface = ip_iface_alloc(unicast, netmask);
+  dev = net_device_alloc();
+  strcpy(dev->name, "eth0");
+  dev->mtu = 30;
+  dev->flags = 0x0001;
+  dev->ops = &test_ops;
+  ip_iface_register(dev, iface);
+
+  EXPECT_EQ(0, ip_output(1, NULL, 0, 0x0100007f, 0x0100007f));
+
+  memory_free(iface);
+  memory_free(dev);
+}
