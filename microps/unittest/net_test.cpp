@@ -2,7 +2,9 @@
 
 extern "C" {
 #include "../driver/dummy.h"
+#include "../ip.h"
 #include "../net.h"
+#include "../platform/linux/platform.h"
 }
 
 TEST(NetDeviceAllocTest, ValidCase) {
@@ -45,4 +47,71 @@ TEST(NetProtocolRegisterTest, AlreadyExistCase) {
   result = net_protocol_register(type, handler);
 
   EXPECT_EQ(-1, result);
+}
+
+TEST(NetDeviceAddIfaceTest, ValidCase) {
+  struct net_device *dev;
+  struct net_iface *iface;
+  dev = net_device_alloc();
+  strcpy(dev->name, "eth0");
+  dev->ifaces = NULL;
+  iface = (struct net_iface *)ip_iface_alloc("192.168.1.1", "255.255.0.0");
+
+  int result = net_device_add_iface(dev, iface);
+
+  EXPECT_EQ(result, 0);
+
+  memory_free(iface);
+  memory_free(dev);
+}
+
+TEST(NetDeviceAddIfaceTest, InvalidCase) {
+  struct net_device *dev;
+  struct net_iface *iface;
+  dev = net_device_alloc();
+  strcpy(dev->name, "eth0");
+  dev->ifaces = NULL;
+  iface = (struct net_iface *)ip_iface_alloc("192.168.1.1", "255.255.0.0");
+
+  net_device_add_iface(dev, iface);
+  int result = net_device_add_iface(dev, iface);
+
+  EXPECT_EQ(result, -1);
+
+  memory_free(iface);
+  memory_free(dev);
+}
+
+TEST(NetDeviceGetIfaceTest, IfaceFound) {
+  struct net_device *dev;
+  struct net_iface *iface, *entry;
+  dev = net_device_alloc();
+  strcpy(dev->name, "eth0");
+  dev->ifaces = NULL;
+  iface = (struct net_iface *)ip_iface_alloc("192.168.1.1", "255.255.0.0");
+  net_device_add_iface(dev, iface);
+
+  entry = net_device_get_iface(dev, NET_IFACE_FAMILY_IP);
+
+  ASSERT_TRUE(entry != NULL);
+
+  memory_free(iface);
+  memory_free(dev);
+}
+
+TEST(NetDeviceGetIfaceTest, IfaceNotFound) {
+  struct net_device *dev;
+  struct net_iface *iface, *entry;
+  dev = net_device_alloc();
+  strcpy(dev->name, "eth0");
+  dev->ifaces = NULL;
+  iface = (struct net_iface *)ip_iface_alloc("192.168.1.1", "255.255.0.0");
+  net_device_add_iface(dev, iface);
+
+  entry = net_device_get_iface(dev, NET_IFACE_FAMILY_IPV6);
+
+  ASSERT_TRUE(entry == NULL);
+
+  memory_free(iface);
+  memory_free(dev);
 }

@@ -1,3 +1,5 @@
+#include "loopback.h"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -7,7 +9,6 @@
 #include "platform.h"
 #include "util.h"
 
-#define LOOPBACK_MTU UINT16_MAX /* maximum size of IP datagram */
 #define LOOPBACK_QUEUE_LIMIT 16
 #define LOOPBACK_IRQ (INTR_IRQ_BASE + 1)
 
