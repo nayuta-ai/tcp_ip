@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "icmp.h"
 #include "platform.h"
 #include "util.h"
 
@@ -242,5 +243,10 @@ int net_init(void) {
     return -1;
   }
   infof("initialized");
+
+  if (icmp_init() == -1) {
+    errorf("icmp_init() failure");
+    return -1;
+  }
   return 0;
 }
