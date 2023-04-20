@@ -7,6 +7,7 @@
 
 #include "arp.h"
 #include "icmp.h"
+#include "ip.h"
 #include "platform.h"
 #include "util.h"
 
@@ -231,8 +232,6 @@ void net_shutdown(void) {
   intr_shutdown();
   debugf("shutting down");
 }
-
-#include "ip.h"
 
 int net_init(void) {
   if (intr_init() == -1) {
