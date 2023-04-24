@@ -40,6 +40,7 @@ static inline int mutex_unlock(mutex_t *mutex) {
 
 #define INTR_IRQ_BASE (SIGRTMIN + 1)
 #define INTR_IRQ_SOFTIRQ SIGUSR1
+#define INTR_IRQ_EVENT SIGUSR2
 
 #define INTR_IRQ_SHARED 0x0001
 
@@ -51,5 +52,15 @@ extern int intr_raise_irq(unsigned int irq);
 extern int intr_run(void);
 extern void intr_shutdown(void);
 extern int intr_init(void);
+
+/*
+ * Scheduler
+ */
+
+struct sched_ctx {
+  pthread_cond_t cond;
+  int interrupted;
+  int wc; /* wait count */
+};
 
 #endif
