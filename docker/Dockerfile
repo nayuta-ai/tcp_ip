@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y \
     make \
     netcat-openbsd \
     vim \
-    sudo
+    sudo \
+    iptables
 
 # install google test
 RUN git clone --depth=1 -b $BRANCH_OR_TAG -q https://github.com/google/googletest.git /googletest
