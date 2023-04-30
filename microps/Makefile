@@ -40,9 +40,9 @@ OBJS = util.o \
 # 		test/step23.exe \
 # 		test/step24.exe \
 # 		test/step25.exe \
+#		test/step27.exe \
 
-
-TESTS = test/step25.exe \
+TESTS = test/step27.exe \
 
 
 CFLAGS := $(CFLAGS) -g -W -Wall -Wno-unused-parameter -iquote .
